@@ -16,9 +16,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                docker build -t ${IMAGE_NAME} .
-                """
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
@@ -30,22 +28,11 @@ pipeline {
                 """
             }
         }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh """
-                kubectl apply -f k8s/
-                """
-            }
-        }
     }
 
     post {
         success {
-            echo "Pipeline completed successfully"
-        }
-        failure {
-            echo "Pipeline failed. Check console logs."
+            echo "Image pushed. ArgoCD will sync automatically."
         }
     }
 }
