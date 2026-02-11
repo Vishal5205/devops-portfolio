@@ -27,3 +27,20 @@ GitHub → Jenkins → Docker Hub → GitHub Manifests → ArgoCD → Kubernetes
 
 ## Project Structure
 
+GitHub
+ ↓
+Jenkins
+ ↓
+Docker Hub
+ ↓
+GitHub (YAML update)
+ ↓
+ArgoCD
+ ↓
+Kubernetes
+ ↓
+NodePort Service
+ ↓
+http://EC2_IP:PORT
+
+
