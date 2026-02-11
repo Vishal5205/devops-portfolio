@@ -41,6 +41,8 @@ pipeline {
         )]) {
 
           sh """
+          git checkout main
+
           sed -i 's|image:.*|image: $IMAGE:$TAG|' k8s/deployment.yaml
 
           git config user.email "jenkins@local"
