@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: portfolio
-        image: vishal1326/portfolio-prod:10
+        image: vishal1326/portfolio-prod:11
         ports:
         - containerPort: 80
