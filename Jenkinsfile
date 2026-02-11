@@ -11,7 +11,7 @@ pipeline {
     stage('Checkout') {
       steps {
         git credentialsId: 'github-creds',
-            url: 'https://github.com/Vishal5205/devops-portfolio.git'
+            url: 'https://github.com/Vishal5205/devops-portfolio'
       }
     }
 
@@ -46,7 +46,7 @@ pipeline {
           git config user.name "jenkins"
           git add k8s/deployment.yaml
           git commit -m "Update image to $IMAGE:$TAG"
-          git push https://$GITHUB_TOKEN@github.com/Vishal5205/devops-portfolio.git main
+          git push https://$GITHUB_TOKEN@github.com/Vishal5205/devops-portfolio main
           """
         }
       }
