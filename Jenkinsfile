@@ -34,7 +34,11 @@ pipeline {
 
     stage('Update Kubernetes Manifest') {
       steps {
-        withCredentials([string(credentialsId: 'github-creds', variable: 'GITHUB_TOKEN')]) {
+        withCredentials([usernamePassword(
+          credentialsId: 'github-creds',
+          usernameVariable: 'GIT_USER',
+          passwordVariable: 'GIT_PASS'
+        )]) {
 
           sh """
           sed -i 's|image:.*|image: $IMAGE:$TAG|' k8s/deployment.yaml
@@ -44,7 +48,7 @@ pipeline {
 
           git add k8s/deployment.yaml
           git commit -m "Update image to $IMAGE:$TAG" || true
-          git push https://$GITHUB_TOKEN@github.com/Vishal5205/devops-portfolio.git main
+          git push https://$GIT_USER:$GIT_PASS@github.com/Vishal5205/devops-portfolio.git main
           """
         }
       }
