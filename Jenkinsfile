@@ -42,6 +42,7 @@ pipeline {
 
           sh """
           git checkout main
+          git pull origin main --rebase
 
           sed -i 's|image:.*|image: $IMAGE:$TAG|' k8s/deployment.yaml
 
