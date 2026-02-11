@@ -1,60 +1,57 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE = "vishal1326/portfolio-prod"
-    TAG = "${BUILD_NUMBER}"
-  }
-
-  stages {
-
-    stage('Build Image') {
-      steps {
-        sh "docker build -t $IMAGE:$TAG ."
-      }
+    environment {
+        DOCKER_IMAGE = "vishal1326/portfolio-prod"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
-    stage('Push Image') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-creds',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
 
-          sh """
-          echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-          docker push $IMAGE:$TAG
-          docker tag $IMAGE:$TAG $IMAGE:latest
-          docker push $IMAGE:latest
-          """
+    stages {
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image..."
+                sh """
+                docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+                """
+            }
         }
-      }
-    }
 
-    stage('Update Kubernetes Manifest') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'github-creds',
-          usernameVariable: 'GIT_USER',
-          passwordVariable: 'GIT_PASS'
-        )]) {
+        stage('Push Docker Image') {
+            steps {
+                echo "Logging into Docker Hub and pushing image..."
 
-          sh """
-          git checkout main
-          git pull origin main --rebase
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
 
-          sed -i 's|image:.*|image: $IMAGE:$TAG|' k8s/deployment.yaml
-
-          git config user.email "jenkins@local"
-          git config user.name "jenkins"
-
-          git add k8s/deployment.yaml
-          git commit -m "Update image to $IMAGE:$TAG" || true
-          git push https://$GIT_USER:$GIT_PASS@github.com/Vishal5205/devops-portfolio.git main
-          """
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_IMAGE}:latest
+                    docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
+                    docker push ${DOCKER_IMAGE}:latest
+                    '''
+                }
+            }
         }
-      }
     }
-  }
+
+    post {
+        success {
+            echo "Build successful. Docker image pushed."
+        }
+        failure {
+            echo "Build failed. Check logs."
+        }
+        always {
+            sh "docker logout || true"
+        }
+    }
 }
